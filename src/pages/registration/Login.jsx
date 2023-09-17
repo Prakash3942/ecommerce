@@ -14,11 +14,11 @@ function Login() {
 
   // Login function
   const Login = async () => {
+    setLoading(true);
     //validation
     if (email === "" || password === "") {
       return toast.error("All fields are required");
     }
-    setLoading(true);
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       toast.success("Login Successfull");

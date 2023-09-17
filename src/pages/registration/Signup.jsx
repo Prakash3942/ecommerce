@@ -18,6 +18,7 @@ function Signup() {
   // sign-up function
   const signup = async () => {
     // console.log(name, email, password);
+    // setLoading(true);
     if (name === "" || email === "" || password === "") {
       return toast.error("All fields are required");
     }
