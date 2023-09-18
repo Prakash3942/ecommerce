@@ -5,26 +5,20 @@ import {
   Timestamp,
   addDoc,
   collection,
+  deleteDoc,
+  doc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
+  setDoc,
 } from "firebase/firestore";
 import { fireDB } from "../../firebase/FirebaseConfig";
 
 function myState(props) {
   const [mode, setMode] = useState("light");
   const [loading, setLoading] = useState(false);
-
-  const toggleMode = () => {
-    if (mode === "light") {
-      setMode("dark");
-      document.body.style.backgroundColor = "rgb(17, 24, 39)";
-    } else {
-      setMode("light");
-      document.body.style.backgroundColor = "white";
-    }
-  };
-
+  const [product, setProduct] = useState([]);
   const [products, setProducts] = useState({
     title: null,
     price: null,
@@ -38,6 +32,31 @@ function myState(props) {
       year: "numeric",
     }),
   });
+  const [order, setOrder] = useState([]);
+
+  const toggleMode = () => {
+    if (mode === "light") {
+      setMode("dark");
+      document.body.style.backgroundColor = "rgb(17, 24, 39)";
+    } else {
+      setMode("light");
+      document.body.style.backgroundColor = "white";
+    }
+  };
+
+  // const [products, setProducts] = useState({
+  //   title: null,
+  //   price: null,
+  //   imageUrl: null,
+  //   category: null,
+  //   description: null,
+  //   time: Timestamp.now(),
+  //   date: new Date().toLocaleString("en-US", {
+  //     month: "short",
+  //     day: "2-digit",
+  //     year: "numeric",
+  //   }),
+  // });
 
   const addProduct = async () => {
     if (
@@ -59,7 +78,7 @@ function myState(props) {
 
       setTimeout(() => {
         window.location.href = "/dashboard";
-      }, 8000);
+      }, 1000);
 
       getProductdata();
       setLoading(false);
@@ -69,7 +88,7 @@ function myState(props) {
     }
   };
 
-  const [product, setProduct] = useState([]);
+  // const [product, setProduct] = useState([]);
 
   const getProductdata = async () => {
     setLoading(true);
@@ -94,6 +113,90 @@ function myState(props) {
     getProductdata();
   }, []);
 
+  // Update Product Function
+  const edithandle = (item) => {
+    setProducts(item);
+  };
+
+  const updateProduct = async () => {
+    setLoading(true);
+    try {
+      await setDoc(doc(fireDB, "products", products.id), products);
+      toast.success("Product Updated successfully");
+      getProductdata();
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (item) => {
+    setLoading(true);
+    try {
+      await deleteDoc(doc(fireDB, "products", item.id));
+      toast.success("Product Deleted Successfully");
+      getProductdata();
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  const getOrderData = async () => {
+    setLoading(true);
+    try {
+      const result = await getDocs(collection(fireDB, "order"));
+      console.log(result);
+      const ordersArray = [];
+      result.forEach((doc) => {
+        ordersArray.push(doc.data());
+        setLoading(false);
+      });
+      setOrder(ordersArray);
+      console.log(ordersArray);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  // get user function
+  const [user, setUser] = useState([]);
+
+  const getUserData = async () => {
+    setLoading(true);
+    try {
+      const result = await getDocs(collection(fireDB, "users"));
+      const usersArray = [];
+      result.forEach((doc) => {
+        usersArray.push(doc.data());
+        setLoading(false);
+      });
+      setUser(usersArray);
+      console.log(usersArray);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  // Filter Function
+  const [searchkey, setSearchkey] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterPrice, setFilterPrice] = useState("");
+
+  useEffect(() => {
+    getOrderData();
+    getUserData();
+  }, []);
+
   return (
     <MyContext.Provider
       value={{
@@ -105,6 +208,17 @@ function myState(props) {
         setProducts,
         addProduct,
         product,
+        edithandle,
+        updateProduct,
+        deleteProduct,
+        order,
+        user,
+        searchkey,
+        setSearchkey,
+        filterType,
+        setFilterType,
+        filterPrice,
+        setFilterPrice,
       }}
     >
       {props.children}
